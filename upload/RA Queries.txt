@@ -1,0 +1,55 @@
+1. List the names of all employees in department 5 who work more than 10 hours per week on the ProductX project.
+
+
+\select_{Hours>10} (WORKS_ON \join_{Pno = Pnumber} (\select_{Pname = "ProductX"} PROJECT)) \join_{Essn = Ssn} (\select_{Dno = 5} EMPLOYEE);
+
+
+2. For each project, list the project name and the total hours per week (by all employees) spent on that project.
+
+*not running in ra 2.2b on mac
+
+\aggr_{Pname: avg(Hours)} (
+PROJECT \join_{Pnumber = Pno} (\project_{Hours, Pno} WORKS_ON));
+
+
+3. List the names of employees who are directly supervised by Franklin Wong.
+
+\project_{Fname, Lname} \select_{sFname = 'Franklin' and sLname = 'Wong'} (\project_{Fname, Lname, Super_ssn} EMPLOYEE \join_{sSsn = Super_ssn} \rename_{sFname, sLname, sSsn} \project_{Fname, Lname, Ssn} EMPLOYEE);
+
+
+4. For each department, retrieve the department name, and the average salary of employees working in that department.
+
+*not running in ra 2.2b on mac
+
+\aggr_{Dname: avg(Salary)} (
+EMPLOYEE \join_{Dno = Dnumber} (\project_{Dname, Dnumber} DEPARTMENT));
+
+
+5. List the names of employees who do not work on any project.
+
+*not running in ra 2.2b on mac
+
+(\project_{Fname, Lname, Ssn} EMPLOYEE)
+\diff
+(\project_{Fname, Lname, Ssn} (EMPLOYEE \join_{Ssn = Essn} WORKS_ON));
+
+
+6. List the names and addresses of employees who work on at least one project located in Houston but whose department has no location in Houston.
+
+(\select_{Plocation = "Houston"} (WORKS_ON \join_{Pno = Pnumber} PROJECT))
+\join_{Essn = Ssn}
+(\select_{Dlocation <> "Houston" and Dnumber = Dno}
+ (EMPLOYEE \join_{Dno = Dnumber} DEPT_LOCATIONS));
+
+
+7. List the names of department managers who have no dependents.
+
+*not running in ra 2.2b on mac
+
+\project_{Fname, Lname} 
+((\project_{Fname, Lname, Ssn} (EMPLOYEE \join_{Ssn = Mgr_ssn} DEPARTMENT))
+ \diff
+ (\project_{Fname, Lname, Ssn} ((EMPLOYEE \join_{Ssn = Mgr_ssn} DEPARTMENT) \join_{Essn = Ssn} \project_{Essn} (DEPENDENT))));
+
+
+

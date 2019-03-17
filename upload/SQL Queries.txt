@@ -1,0 +1,70 @@
+1. List the names of all employees in department 5 who work more than 10 hours per week on the ProductX project.
+
+SELECT Fname, Lname
+FROM EMPLOYEE E
+INNER JOIN (SELECT *
+FROM WORKS_ON W
+INNER JOIN PROJECT P ON W.Pno = P.Pnumber
+WHERE P.Pname = "ProductX") N ON E.Ssn = N.Essn
+WHERE E.Dno = 5 AND N.Hours>10;
+
+
+2. For each project, list the project name and the total hours per week (by all employees) spent on that project.
+
+SELECT Pname, SUM(Hours) AS "Hours"
+FROM WORKS_ON
+INNER JOIN PROJECT ON PROJECT.Pnumber = WORKS_ON.Pno
+GROUP BY Pname;
+
+
+3. List the names of employees who are directly supervised by Franklin Wong.
+
+SELECT E.Fname, E.Lname
+FROM EMPLOYEE AS E
+INNER JOIN EMPLOYEE AS S
+ON E.Super_ssn = S.Ssn
+WHERE S.Fname = "Franklin" AND S.Lname = "Wong";
+
+
+4. For each department, retrieve the department name, and the average salary of employees working in that department.
+
+SELECT DEPARTMENT.Dname, AVG(EMPLOYEE.Salary) AS AVERAGE_SALARY FROM EMPLOYEE
+LEFT JOIN DEPARTMENT ON EMPLOYEE.Dno = DEPARTMENT.Dnumber
+GROUP BY Dname;
+
+5. List the names of employees who do not work on any project.
+
+SELECT E.Fname, E.Lname
+FROM EMPLOYEE E
+LEFT JOIN WORKS_ON W ON W.Essn = E.ssn
+WHERE W.Essn IS NULL;
+
+6. List the names and addresses of employees who work on at least one project located in Houston but whose department has no location in Houston.
+
+
+SELECT
+    E.Fname, E.Lname, E.Address
+FROM
+    EMPLOYEE E
+INNER JOIN WORKS_ON W ON E.Ssn = W.Essn
+WHERE NOT EXISTS (
+      SELECT * 
+        FROM DEPT_LOCATIONS D
+       WHERE D.Dnumber = E.Dno AND D.Dlocation = "Houston")
+	AND EXISTS (
+      SELECT * 
+        FROM PROJECT P
+       WHERE P.Pnumber = W.Pno AND P.Plocation = "Houston");
+
+
+7. List the names of department managers who have no dependents.
+
+SELECT Fname, Lname
+FROM EMPLOYEE
+WHERE Ssn = (
+SELECT Mgr_ssn
+FROM DEPARTMENT D
+LEFT JOIN DEPENDENT DE ON D.Mgr_ssn = DE.Essn
+WHERE DE.Essn IS NULL
+);
+
